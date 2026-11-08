@@ -1,0 +1,42 @@
+name: Build GummyDelivery APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Android
+        uses: android-actions/setup-android@v4
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Descomprimir proyecto
+        run: |
+          unzip -o GummyDelivery-Android-Project.zip -d source
+
+      - name: Compilar APK
+        working-directory: source/GummyDelivery
+        run: gradle assembleDebug --no-daemon
+
+      - name: Publicar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GummyDelivery-APK
+          path: source/GummyDelivery/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
